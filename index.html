@@ -3,201 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Oro - Negociación</title>
+    <title>Calculadora Oro - V6 (Corregida)</title>
     <style>
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f8f9fa; margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .container { background: white; width: 100%; max-width: 450px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        /* ESTILOS (DISEÑO) */
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f1f2f6; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .container { background: white; width: 100%; max-width: 450px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
         
-        /* Header Compacto */
-        .header { background: #343a40; color: #ffd43b; padding: 15px; text-align: center; }
-        .header h2 { margin: 0; font-size: 20px; text-transform: uppercase; }
+        /* Encabezado */
+        .header { background: #2f3542; color: #ffa502; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-ai { background: transparent; border: 1px solid #ffa502; color: #ffa502; padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-ai:hover { background: #ffa502; color: #2f3542; }
 
         .content { padding: 15px; }
 
-        /* Inputs */
-        label { font-weight: bold; color: #495057; display: block; margin-top: 10px; margin-bottom: 5px; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 18px; text-align: center; box-sizing: border-box; }
-        input:focus { border-color: #ffd43b; outline: none; border-width: 2px; }
+        /* PANEL ASISTENTE (Oculto) */
+        #aiPanel { display: none; background: #2f3542; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ffa502; }
+        .ai-grid { display: flex; gap: 10px; margin-bottom: 10px; }
+        .ai-input { flex: 1; }
+        .ai-input label { font-size: 10px; color: #ccc; display: block; margin-bottom: 2px; }
+        .ai-input input { width: 100%; background: #57606f; border: none; color: white; padding: 8px; text-align: center; border-radius: 4px; box-sizing: border-box; }
+        
+        /* Tabla Guía */
+        .guide-table { width: 100%; font-size: 13px; border-collapse: collapse; margin-top: 5px; }
+        .guide-table td { border-bottom: 1px solid #57606f; padding: 6px; }
+        .safe-val { color: #2ed573; font-weight: bold; text-align: right; }
 
-        /* Switch Precio */
-        .price-toggle { display: flex; gap: 5px; margin-bottom: 5px; }
-        .price-toggle label { flex: 1; background: #e9ecef; padding: 10px; text-align: center; border-radius: 6px; cursor: pointer; font-size: 13px; margin: 0; transition: 0.2s; border: 1px solid transparent; }
-        input[type="radio"] { display: none; }
-        input[type="radio"]:checked + label { background-color: #228be6; color: white; font-weight: bold; border-color: #1864ab; }
+        /* Inputs Principales */
+        label { font-weight: bold; color: #2f3542; display: block; margin-top: 15px; font-size: 14px; margin-bottom: 5px; }
+        input.main-input, select.main-input { width: 100%; padding: 12px; border: 1px solid #ced6e0; border-radius: 8px; font-size: 18px; text-align: center; box-sizing: border-box; background: #fff; }
+        input.main-input:focus { border-color: #ffa502; outline: none; border-width: 2px; }
 
-        /* CAJA MÁGICA DE REFERENCIAS (EL CHISMOSO) */
-        .ref-box { background-color: #e7f5ff; border: 1px solid #74c0fc; border-radius: 8px; padding: 10px; margin-top: 10px; display: none; }
-        .ref-title { font-size: 11px; color: #1c7ed6; text-transform: uppercase; font-weight: bold; text-align: center; margin-bottom: 5px; }
-        .ref-grid { display: flex; justify-content: space-around; text-align: center; }
-        .ref-item span { display: block; font-size: 12px; color: #555; }
-        .ref-item strong { display: block; font-size: 16px; color: #1864ab; }
+        /* INTERRUPTOR (Gramo vs Castellano) */
+        .switch-box { display: flex; background: #dfe4ea; border-radius: 8px; padding: 4px; margin-top: 5px; }
+        .switch-box input { display: none; } /* Ocultar radio buttons reales */
+        .switch-box label { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-radius: 6px; font-size: 14px; color: #747d8c; font-weight: bold; transition: 0.2s; }
+        
+        /* Estilo cuando está seleccionado */
+        input:checked + label { background-color: #3742fa; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
-        /* Resultados Grandes */
-        .results { background-color: #fff9db; border: 2px solid #fcc419; border-radius: 10px; padding: 15px; margin-top: 20px; }
-        .res-info { display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 5px; border-bottom: 1px solid #fae3b5; padding-bottom: 5px; }
-        .total-pay { font-size: 32px; font-weight: 800; color: #212529; text-align: center; display: block; margin-top: 5px; }
-        .total-label { text-align: center; display: block; font-size: 12px; color: #868e96; text-transform: uppercase; }
+        /* EL CHISMOSO (Referencias) */
+        .ref-box { background-color: #f1f2f6; border: 1px solid #a4b0be; border-radius: 8px; padding: 10px; margin-top: 15px; display: none; } 
+        .ref-flex { display: flex; justify-content: space-between; text-align: center; }
+        .ref-item span { display: block; font-size: 11px; color: #57606f; }
+        .ref-item strong { display: block; font-size: 14px; color: #3742fa; }
 
-        /* Botones */
-        .btn-group { display: flex; gap: 8px; margin-top: 20px; }
-        button { padding: 12px; border: none; border-radius: 6px; font-weight: bold; color: white; cursor: pointer; font-size: 15px; }
-        .btn-cls { background: #fa5252; width: 30%; }
-        .btn-save { background: #40c057; width: 70%; }
+        /* Resultados */
+        .results { background: #fff7d2; border: 2px solid #ffa502; border-radius: 10px; padding: 15px; margin-top: 20px; text-align: center; }
+        .res-top { display: flex; justify-content: space-around; font-size: 14px; color: #57606f; border-bottom: 1px solid #ffeaa7; padding-bottom: 8px; margin-bottom: 5px; }
+        .total-big { font-size: 32px; font-weight: 800; color: #2f3542; margin-top: 5px; display: block; }
+        .alert-msg { font-size: 13px; font-weight: bold; margin-top: 8px; min-height: 20px; display: block; }
+
+        /* Botones Acción */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        button.action { flex: 1; padding: 14px; border: none; border-radius: 8px; font-weight: bold; color: white; cursor: pointer; font-size: 16px; }
+        .btn-clr { background: #ff4757; width: 30%; }
+        .btn-save { background: #2ed573; width: 70%; }
 
         /* Historial */
-        .history { margin-top: 25px; border-top: 1px dashed #ced4da; padding-top: 10px; }
-        .history h4 { font-size: 12px; color: #adb5bd; text-align: center; margin: 0 0 10px 0; }
-        ul { list-style: none; padding: 0; margin: 0; }
-        li { background: white; padding: 8px 12px; margin-bottom: 6px; border-radius: 6px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #228be6; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .history { margin-top: 25px; border-top: 1px dashed #ced6e0; padding-top: 15px; }
+        .history h4 { font-size: 12px; text-align: center; color: #a4b0be; margin: 0 0 10px 0; text-transform: uppercase; }
+        #lista { padding: 0; margin: 0; list-style: none; }
+        #lista li { background: white; padding: 10px; margin-bottom: 8px; border-left: 4px solid #3742fa; font-size: 13px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-radius: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>💰 Calculadora de Oro</h2>
+        <h2>💎 CALCULADORA TANGOLD</h2>
+        <button class="btn-ai" onclick="togglePanel()">🤖 Asistente</button>
     </div>
 
     <div class="content">
-        <label>⚖️ PESO (Gramos):</label>
-        <input type="number" id="gramos" placeholder="0.00" step="0.01" inputmode="decimal" oninput="calcular()">
+        <div id="aiPanel">
+            <div style="text-align:center; font-size:12px; color:#ffa502; margin-bottom:10px;">CONFIGURAR MERCADO HOY</div>
+            <div class="ai-grid">
+                <div class="ai-input">
+                    <label>ONZA (USD)</label>
+                    <input type="number" id="spot" placeholder="Ej: 2650" oninput="calcularGuia()">
+                </div>
+                <div class="ai-input">
+                    <label>DÓLAR (COP)</label>
+                    <input type="number" id="trm" placeholder="Ej: 4100" oninput="calcularGuia()">
+                </div>
+            </div>
+            <table class="guide-table">
+                <tbody id="tablaGuia">
+                    <tr><td colspan="2" style="text-align:center; color:#ccc;">Ingresa datos arriba...</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-        <label>🏷️ LEY / CALIDAD:</label>
-        <select id="ley">
-            <option value="Fundido">Oro Fundido</option>
-            <option value="Ley 900">Ley 900</option>
+        <label>⚖️ PESO (Oro fundido):</label>
+        <input type="number" id="gramos" class="main-input" placeholder="0.00" step="0.01" oninput="calcularMaestro()">
+
+        <label>🏷️ LEY (Calidad):</label>
+        <select id="ley" class="main-input" onchange="calcularMaestro()">
+            <option value="Fundido">Oro Fundido (General)</option>
+            <option value="Ley 900">Ley 900 (Alta)</option>
             <option value="Ley 875">Ley 875</option>
             <option value="Ley 750">Ley 750 (18k)</option>
             <option value="Chatarra">Chatarra</option>
         </select>
 
-        <label>🤝 PRECIO A PAGAR:</label>
-        <div class="price-toggle">
-            <input type="radio" id="pGramo" name="modo" value="gramo" checked onchange="calcular()">
-            <label for="pGramo">Por GRAMO</label>
+        <label>🤝 PRECIO NEGOCIADO:</label>
+        <div class="switch-box">
+            <input type="radio" id="modoGramo" name="modo" value="gramo" checked onchange="calcularMaestro()">
+            <label for="modoGramo">Por GRAMO</label>
 
-            <input type="radio" id="pCastellano" name="modo" value="castellano" onchange="calcular()">
-            <label for="pCastellano">Por CASTELLANO</label>
+            <input type="radio" id="modoCast" name="modo" value="castellano" onchange="calcularMaestro()">
+            <label for="modoCast">Por CASTELLANO</label>
         </div>
-        <input type="number" id="precio" placeholder="$ Precio Negociado..." inputmode="numeric" oninput="calcular()">
+        
+        <input type="number" id="precio" class="main-input" placeholder="$ 0" style="margin-top:10px; color:#3742fa; font-weight:bold;" oninput="calcularMaestro()">
 
-        <div class="ref-box" id="cajaReferencias">
-            <div class="ref-title">ℹ️ A este precio estás pagando:</div>
-            <div class="ref-grid">
-                <div class="ref-item">
-                    <span>El Real a:</span>
-                    <strong id="refReal">$0</strong>
-                </div>
-                <div class="ref-item">
-                    <span>El Cast. a:</span>
-                    <strong id="refCast">$0</strong>
-                </div>
-                <div class="ref-item">
-                    <span>El Gramo a:</span>
-                    <strong id="refGramo">$0</strong>
-                </div>
+        <div class="ref-box" id="cajaRef">
+            <div style="font-size:10px; text-align:center; color:#747d8c; margin-bottom:5px;">EQUIVALENCIAS:</div>
+            <div class="ref-flex">
+                <div class="ref-item"><span>Real:</span><strong id="refReal">$0</strong></div>
+                <div class="ref-item"><span>Gramo:</span><strong id="refGramo">$0</strong></div>
+                <div class="ref-item"><span>Cast:</span><strong id="refCast">$0</strong></div>
             </div>
         </div>
 
         <div class="results">
-            <div class="res-info">
-                <span>📦 Castellanos: <b id="valCast">0.00</b></span>
-                <span>💎 Reales: <b id="valReales">0.00</b></span>
+            <div class="res-top">
+                <span>📦 Cast: <b id="resCast">0.00</b></span>
+                <span>💎 Reales: <b id="resReales">0.00</b></span>
             </div>
-            <span class="total-label">Total a Entregar al Cliente:</span>
-            <span class="total-pay" id="valTotal">$0</span>
+            <span style="font-size:11px; color:#747d8c;">TOTAL A PAGAR:</span>
+            <span class="total-big" id="resTotal">$0</span>
+            
+            <div id="alertaIA" class="alert-msg"></div>
         </div>
 
         <div class="btn-group">
-            <button class="btn-cls" onclick="borrar()">Borrar</button>
-            <button class="btn-save" onclick="guardar()">Guardar</button>
+            <button class="action btn-clr" onclick="limpiar()">Borrar</button>
+            <button class="action btn-save" onclick="guardar()">Guardar</button>
         </div>
 
         <div class="history">
-            <h4>📝 Últimos Negocios</h4>
+            <h4>📝 Historial Reciente</h4>
             <ul id="lista"></ul>
         </div>
     </div>
 </div>
 
 <script>
-    function calcular() {
-        let gramos = parseFloat(document.getElementById('gramos').value) || 0;
-        let precio = parseFloat(document.getElementById('precio').value) || 0;
-        let modo = document.querySelector('input[name="modo"]:checked').value;
-        let cajaRef = document.getElementById('cajaReferencias');
+    // --- VARIABLES GLOBALES ---
+    let preciosSeguros = {}; // Aquí guardamos lo que dice la IA
 
-        // 1. Calcular Cantidades
-        let castellanos = gramos / 4.6;
-        let reales = castellanos * 16; // O gramos / 0.2875
+    // --- 1. FUNCIÓN DEL ASISTENTE (IA) ---
+    function togglePanel() {
+        let panel = document.getElementById('aiPanel');
+        if(panel.style.display === 'block') {
+            panel.style.display = 'none';
+        } else {
+            panel.style.display = 'block';
+        }
+    }
 
-        // 2. Calcular Totales y Referencias
-        let total = 0;
-        let precioPorReal = 0;
-        let precioPorCast = 0;
-        let precioPorGramo = 0;
+    function calcularGuia() {
+        let spot = parseFloat(document.getElementById('spot').value) || 0;
+        let trm = parseFloat(document.getElementById('trm').value) || 0;
+        let tabla = document.getElementById('tablaGuia');
 
-        if (precio > 0) {
-            cajaRef.style.display = 'block'; // Mostrar la caja azul
+        if(spot > 0 && trm > 0) {
+            // Matemática: (Onza * Dolar) / 31.1035 gramos por onza
+            let precioGramoPuro = (spot * trm) / 31.1035;
             
+            // Margen de seguridad del 15% (El negocio paga al 85% del internacional)
+            let margen = 0.85;
+
+            // Guardamos los precios máximos sugeridos
+            preciosSeguros = {
+                'Ley 900': precioGramoPuro * 0.90 * margen,
+                'Ley 750': precioGramoPuro * 0.75 * margen,
+                'Chatarra': precioGramoPuro * 0.58 * margen
+            };
+
+            // Dibujamos la tabla verde
+            let html = '';
+            // Usamos concatenación simple para evitar errores de copia
+            html += '<tr><td>Ley 900</td><td class="safe-val">' + moneda(preciosSeguros['Ley 900']) + '</td></tr>';
+            html += '<tr><td>Ley 750</td><td class="safe-val">' + moneda(preciosSeguros['Ley 750']) + '</td></tr>';
+            html += '<tr><td>Chatarra</td><td class="safe-val">' + moneda(preciosSeguros['Chatarra']) + '</td></tr>';
+            
+            tabla.innerHTML = html;
+            
+            // Recalculamos por si acaso ya había un precio puesto
+            calcularMaestro();
+        }
+    }
+
+    // --- 2. EL CEREBRO PRINCIPAL (CALCULAR TODO) ---
+    function calcularMaestro() {
+        // A. Obtener valores
+        let gramos = parseFloat(document.getElementById('gramos').value) || 0;
+        let precioUsuario = parseFloat(document.getElementById('precio').value) || 0;
+        
+        // B. Detectar modo (Gramo o Castellano)
+        let radioGramo = document.getElementById('modoGramo');
+        let modo = radioGramo.checked ? 'gramo' : 'castellano';
+
+        // C. Conversiones de Peso
+        let castellanos = gramos / 4.6;
+        let reales = castellanos * 16;
+
+        // D. Cálculos de Dinero
+        let total = 0;
+        let pGramo = 0, pCast = 0, pReal = 0;
+
+        if (precioUsuario > 0) {
+            document.getElementById('cajaRef').style.display = 'block';
+
             if (modo === 'gramo') {
-                // Negoció por Gramo
-                total = gramos * precio;
-                precioPorGramo = precio;
-                precioPorCast = precio * 4.6; 
-                precioPorReal = precio * 0.2875; // La magia del 0.2875
+                // Si negocia por gramo
+                total = gramos * precioUsuario;
+                pGramo = precioUsuario;
+                pCast = precioUsuario * 4.6;
+                pReal = precioUsuario * 0.2875;
             } else {
-                // Negoció por Castellano
-                total = castellanos * precio;
-                precioPorCast = precio;
-                precioPorReal = precio / 16;
-                precioPorGramo = precio / 4.6;
+                // Si negocia por castellano
+                total = castellanos * precioUsuario;
+                pCast = precioUsuario;
+                pGramo = precioUsuario / 4.6;
+                pReal = precioUsuario / 16;
             }
         } else {
-            cajaRef.style.display = 'none'; // Ocultar si no hay precio
+            document.getElementById('cajaRef').style.display = 'none';
         }
 
-        // 3. Renderizar en Pantalla
-        document.getElementById('valCast').innerText = castellanos.toFixed(4);
-        document.getElementById('valReales').innerText = reales.toFixed(2);
-        document.getElementById('valTotal').innerText = moneda(total);
+        // E. Mostrar en Pantalla (Resultados numéricos)
+        document.getElementById('resCast').innerText = castellanos.toFixed(4);
+        document.getElementById('resReales').innerText = reales.toFixed(2);
+        document.getElementById('resTotal').innerText = moneda(total);
 
-        // Renderizar Referencias (El Chismoso)
-        document.getElementById('refReal').innerText = moneda(precioPorReal);
-        document.getElementById('refCast').innerText = moneda(precioPorCast);
-        document.getElementById('refGramo').innerText = moneda(precioPorGramo);
+        // F. Mostrar Referencias (El Chismoso)
+        document.getElementById('refGramo').innerText = moneda(pGramo);
+        document.getElementById('refCast').innerText = moneda(pCast);
+        document.getElementById('refReal').innerText = moneda(pReal);
+
+        // G. VERIFICACIÓN DE IA (Semáforo)
+        verificarSeguridad(pGramo);
     }
 
+    // --- 3. VERIFICADOR DE SEGURIDAD ---
+    function verificarSeguridad(precioGramoActual) {
+        let alertaDiv = document.getElementById('alertaIA');
+        let leySeleccionada = document.getElementById('ley').value;
+        let precioTope = preciosSeguros[leySeleccionada];
+
+        // Solo verificamos si la IA fue configurada y hay un precio puesto
+        if (precioTope && precioGramoActual > 0) {
+            if (precioGramoActual > precioTope) {
+                // PELIGRO
+                alertaDiv.innerHTML = '<span style="color:#ff4757">⚠️ RIESGO: Pagando por encima del sugerido (' + moneda(precioTope) + ')</span>';
+            } else {
+                // SEGURO
+                alertaDiv.innerHTML = '<span style="color:#2ed573">✅ PRECIO SEGURO (Margen OK)</span>';
+            }
+        } else {
+            alertaDiv.innerHTML = '';
+        }
+    }
+
+    // --- UTILIDADES ---
     function moneda(valor) {
-        return new Intl.NumberFormat('es-CO', { 
-            style: 'currency', currency: 'COP', maximumFractionDigits: 0 
-        }).format(valor);
+        if (!valor) return '$0';
+        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(valor);
     }
 
-    function borrar() {
+    function limpiar() {
         document.getElementById('gramos').value = '';
         document.getElementById('precio').value = '';
-        document.getElementById('cajaReferencias').style.display = 'none';
-        document.getElementById('valCast').innerText = '0.00';
-        document.getElementById('valReales').innerText = '0.00';
-        document.getElementById('valTotal').innerText = '$0';
+        document.getElementById('cajaRef').style.display = 'none';
+        document.getElementById('alertaIA').innerHTML = '';
+        
+        // Resetear visuales a cero
+        document.getElementById('resTotal').innerText = '$0';
+        document.getElementById('resCast').innerText = '0.00';
+        document.getElementById('resReales').innerText = '0.00';
+        
         document.getElementById('gramos').focus();
     }
 
     function guardar() {
-        let total = document.getElementById('valTotal').innerText;
+        let total = document.getElementById('resTotal').innerText;
         if(total === '$0') return;
 
         let gramos = document.getElementById('gramos').value;
         let ley = document.getElementById('ley').value;
         let lista = document.getElementById('lista');
         let item = document.createElement('li');
-        let hora = new Date().toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
+        
+        let fecha = new Date();
+        let hora = fecha.getHours() + ':' + (fecha.getMinutes()<10?'0':'') + fecha.getMinutes();
 
-        item.innerHTML = `<span><strong>${hora}</strong> ${gramos}g (${ley})</span> <strong>${total}</strong>`;
+        item.innerHTML = '<span><b>' + hora + '</b>: ' + gramos + 'g (' + ley + ')</span> <b>' + total + '</b>';
         
         lista.insertBefore(item, lista.firstChild);
-        if(lista.children.length > 8) lista.removeChild(lista.lastChild);
+        if(lista.children.length > 10) lista.removeChild(lista.lastChild);
     }
 </script>
 
